@@ -1,7 +1,9 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Specialized;
 using System.Net;
+
 
 namespace CrawlerPiguLt
 {
@@ -14,23 +16,52 @@ namespace CrawlerPiguLt
         {
             HtmlWeb hw = new HtmlWeb();
             HtmlDocument info = hw.Load(newUrlAddress);
-            Console.WriteLine(newUrlAddress);
+            String[] titleArray = new string[500];
+            String[] priceArray = new string[500];
+            String[] discountArray = new string[500];
+            for (int k = 0; k < titleArray.Length; k++)
+            {
+                titleArray[k] = "";
+                priceArray[k] = "";
+                discountArray[k] = "";
+            }
+            int a = 0, b = 0, c = 0;
+
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
             {
-                //Console.WriteLine(information_about_product.InnerText.Trim());
-                //scObject.settingPrice(information_about_product.InnerText.Trim());
+             //   Console.WriteLine(information_about_product.InnerText.Trim());
+                priceArray[b] = information_about_product.InnerText.Trim();
+                b = b + 1;
             }
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
             {
-                //Console.WriteLine(information_about_product.InnerText.Trim());
+                // Console.WriteLine(information_about_product.InnerText.Trim());
+                titleArray[a] = information_about_product.InnerText.Trim();
+                a = a + 1;
             }
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//span[@class='discount']"))
             {
                 //Console.WriteLine(information_about_product.InnerText.Trim());
+                discountArray[c] = information_about_product.InnerText.Trim();
+                c = c + 1;
             }
 
+            for(int j = 0; j < titleArray.Length; j++)
+            {
+                if(titleArray[j].Equals("") || priceArray.Equals(""))
+                {
+
+                }
+                else
+                {
+                    Console.WriteLine(" KAINA: " + priceArray[j] + " TITLE: " + titleArray[j] + " DISCOUNT: " + discountArray[j]);
+                }
+            }
         }
 
+
+
+    
         public int crawling(String kategorija, String newUrlAddress)
         {
             WebClient client = new WebClient();
