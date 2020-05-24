@@ -1,22 +1,22 @@
 ﻿using HtmlAgilityPack;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CrawlerPiguLt
 {
     public class Program
     {
         public int triesToConnect = 0;
-        public int crawling(String newUrlAddress)
+        public NameValueCollection piguLtUrls = new NameValueCollection();
+
+        public int crawling(String kategorija, String newUrlAddress)
         {
             WebClient client = new WebClient();
 
             NameValueCollection myNameValueCollection = new NameValueCollection();
+
+            NameValueCollection piguLtInnerUrls = new NameValueCollection();
 
             String[] valueArray = null;
 
@@ -36,39 +36,30 @@ namespace CrawlerPiguLt
 
             try
             {
-                HtmlWeb hw = new HtmlWeb();
-                HtmlDocument data = hw.Load(newUrlAddress);
-                foreach (HtmlNode link in data.DocumentNode.SelectNodes("//div[@class='subcategory-list']//a"))
-                {
-                    Console.WriteLine(link.GetAttributeValue("href", string.Empty));
-                }
-                
+                 Console.WriteLine("\nKategorija " + kategorija + "\n");
+                 HtmlWeb hw = new HtmlWeb();
+                 HtmlDocument dataInner = hw.Load(newUrlAddress);
+                 try
+                 {
+                     foreach (HtmlNode link in dataInner.DocumentNode.SelectNodes("//div[@id='categoriesGrid']//a"))
+                     {
+                          piguLtInnerUrls.Add(link.InnerText, link.GetAttributeValue("href", string.Empty));
+                          Console.WriteLine(link.InnerText.Trim());
+                     }
+                 }
+                 catch (Exception response_exception)
+                 {
+                    Console.WriteLine("prekes_sarase");
+                 }
 
-
-                //string data = client.DownloadString(newUrlAddress);
-                //Console.WriteLine(newUrlAddress);
-                //Console.WriteLine(data);
-
-                /*WebHeaderCollection myWebHeaderCollection = client.ResponseHeaders;
-                for (int i = 0; i < myWebHeaderCollection.Count; i++)
-                    Console.WriteLine("\t" + myWebHeaderCollection.GetKey(i) + " = " + myWebHeaderCollection.Get(i));
-
-                Console.WriteLine("Duomenys\n" + data);*/
                 return 0;
 
             }
             catch (Exception response_exception)
             {
-                Console.WriteLine("ERROR\n" + response_exception);
+               // Console.WriteLine("ERROR\n" + response_exception);
                 triesToConnect = triesToConnect + 1;
-                if (triesToConnect == 1)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return 1;
-                }
+                return 1;
             }
         }
 
@@ -77,18 +68,29 @@ namespace CrawlerPiguLt
             int methodRecursion = 1;
             Program crawlerObject = new Program();
             Sc scObject = new Sc();
+            NameValueCollection piguLtUrls = new NameValueCollection();
 
-           // for (int i = 30; i < days; i++) // reikes pakeisti (int i = 1; i < days + 1; i++)
-           // {
-                string newUrlAddress = scObject.createUrl();
+            string newUrlAddress = scObject.createUrl();
 
-                methodRecursion = crawlerObject.crawling(newUrlAddress);
+            HtmlWeb hw = new HtmlWeb();
+            HtmlDocument data = hw.Load(newUrlAddress);
+            foreach (HtmlNode link in data.DocumentNode.SelectNodes("//div[@class='subcategory-list']//a"))
+            {
+                piguLtUrls.Add(link.InnerText, link.GetAttributeValue("href", string.Empty));
+            }
 
-                if (methodRecursion == 1)
+            while (methodRecursion == 1)
+            {
+                foreach (String key in piguLtUrls.Keys)
                 {
-                    methodRecursion = crawlerObject.crawling(newUrlAddress);
+                    var valueArray = piguLtUrls.GetValues(key);
+                    foreach (String value in valueArray)
+                    {
+                        methodRecursion = crawlerObject.crawling(key, value);
+                    }
                 }
-          //  }
+            }
+
             Console.WriteLine("END");
         }
     }
