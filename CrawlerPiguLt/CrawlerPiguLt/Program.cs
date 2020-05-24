@@ -10,13 +10,32 @@ namespace CrawlerPiguLt
         public int triesToConnect = 0;
         public NameValueCollection piguLtUrls = new NameValueCollection();
 
+        public void gettingAllInfo(String newUrlAddress)
+        {
+            HtmlWeb hw = new HtmlWeb();
+            HtmlDocument info = hw.Load(newUrlAddress);
+            Console.WriteLine(newUrlAddress);
+            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
+            {
+                //Console.WriteLine(information_about_product.InnerText.Trim());
+                //scObject.settingPrice(information_about_product.InnerText.Trim());
+            }
+            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
+            {
+                //Console.WriteLine(information_about_product.InnerText.Trim());
+            }
+            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//span[@class='discount']"))
+            {
+                //Console.WriteLine(information_about_product.InnerText.Trim());
+            }
+
+        }
+
         public int crawling(String kategorija, String newUrlAddress)
         {
             WebClient client = new WebClient();
 
             NameValueCollection myNameValueCollection = new NameValueCollection();
-
-            NameValueCollection piguLtInnerUrls = new NameValueCollection();
 
             String[] valueArray = null;
 
@@ -43,17 +62,15 @@ namespace CrawlerPiguLt
                  {
                      foreach (HtmlNode link in dataInner.DocumentNode.SelectNodes("//div[@id='categoriesGrid']//a"))
                      {
-                          piguLtInnerUrls.Add(link.InnerText, link.GetAttributeValue("href", string.Empty));
-                          Console.WriteLine(link.InnerText.Trim());
+                        gettingAllInfo(link.GetAttributeValue("href", string.Empty));
                      }
                  }
                  catch (Exception response_exception)
                  {
-                    Console.WriteLine("prekes_sarase");
+                     Console.WriteLine("Prekes sarase");
+                     gettingAllInfo(newUrlAddress);
                  }
-
-                return 0;
-
+                 return 0;
             }
             catch (Exception response_exception)
             {
@@ -67,10 +84,9 @@ namespace CrawlerPiguLt
         {
             int methodRecursion = 1;
             Program crawlerObject = new Program();
-            Sc scObject = new Sc();
             NameValueCollection piguLtUrls = new NameValueCollection();
 
-            string newUrlAddress = scObject.createUrl();
+            string newUrlAddress = "https://pigu.lt/lt/katalogas";
 
             HtmlWeb hw = new HtmlWeb();
             HtmlDocument data = hw.Load(newUrlAddress);
