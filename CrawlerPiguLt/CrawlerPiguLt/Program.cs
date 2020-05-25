@@ -3,41 +3,63 @@ using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Net;
 
 namespace CrawlerPiguLt
 {
     public class Program
     {
         public int index = 0;
+        public int pageNumber = 1;
         public int triesToConnect = 0;
         public NameValueCollection piguLtUrls = new NameValueCollection();
 
         public List<string> priceList = new List<string>();
         public List<string> titleList = new List<string>();
         public List<string> discountList = new List<string>();
-        public List<string> linkList = new List<string>(); // dar nenaudojamas bus
 
-        public void gettingAllInfo(String newUrlAddress)
+        public string originalUrl = "";
+
+        public int gettingAllInfo(String newUrlAddress)
         {
             index = index + 1;
             Console.WriteLine(index);
             HtmlWeb hw = new HtmlWeb();
-            HtmlDocument info = hw.Load(newUrlAddress);
+            try
+            {
+                HtmlDocument info = hw.Load(newUrlAddress);
+                Console.WriteLine(newUrlAddress);
+                if (pageNumber == 1)
+                {
+                    originalUrl = newUrlAddress;
+                }
+                pageNumber = pageNumber + 1;
 
-            // duomenys saugomi nelabai gerai, nes visas is eiles eina, o ne lygiagrečiai. listus reikitu pakeisti i objektu lista arba kelis mapus.
-
-            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
-            {
-                priceList.Add(information_about_product.InnerText.Trim());
+                foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
+                {
+                    priceList.Add(information_about_product.InnerText.Trim());
+                }
+                foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
+                {
+                    titleList.Add(information_about_product.InnerText.Trim());
+                }
+                foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-item__badges']"))
+                {
+                    var value = information_about_product.InnerHtml;
+                    if (value.Contains("discount") == true)
+                    {
+                        discountList.Add(information_about_product.InnerText.Trim().Replace("\n", "").Replace("\r", ""));
+                    }
+                    else
+                    {
+                        discountList.Add("No discount");
+                    }
+                }
+                gettingAllInfo(originalUrl + "?page=" + pageNumber);
+                return 0;
             }
-            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
+            catch(Exception ex)
             {
-                titleList.Add(information_about_product.InnerText.Trim());
-            }
-            foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//span[@class='discount']"))
-            {
-                discountList.Add(information_about_product.InnerText.Trim());
+                return 2;
             }
         }
         // kai einama per puslapiu url prisideda ?page=3
@@ -47,24 +69,20 @@ namespace CrawlerPiguLt
             Microsoft.Office.Interop.Excel.Application oXL;
             Microsoft.Office.Interop.Excel._Workbook oWB;
             Microsoft.Office.Interop.Excel._Worksheet oSheet;
-            Microsoft.Office.Interop.Excel.Range oRng;
             object misvalue = System.Reflection.Missing.Value;
             try
             {
-                //Start Excel and get Application object.
                 oXL = new Microsoft.Office.Interop.Excel.Application();
                 oXL.Visible = true;
 
-                //Get a new workbook.
                 oWB = (Microsoft.Office.Interop.Excel._Workbook)(oXL.Workbooks.Add(""));
                 oSheet = (Microsoft.Office.Interop.Excel._Worksheet)oWB.ActiveSheet;
 
-                //Add table headers going cell by cell.
                 oSheet.Cells[1, 1] = "Price";
                 oSheet.Cells[1, 2] = "Title";
                 oSheet.Cells[1, 3] = "Discount";
 
-                for(int i = 2; i < titleList.Count; i++)
+                for(int i = 2; i < priceList.Count; i++)
                 {
                     oSheet.Cells[i, 1] = priceList[i - 2];
                     oSheet.Cells[i, 2] = titleList[i - 2];
@@ -82,7 +100,7 @@ namespace CrawlerPiguLt
             }
             catch(Exception ex)
             {
-
+                Console.WriteLine("Couldn't save to Excel");
             }
         }
 
@@ -92,18 +110,28 @@ namespace CrawlerPiguLt
 
             try
             {
+                // nepaema kitu puslpiu
                  HtmlWeb hw = new HtmlWeb();
                  HtmlDocument dataInner = hw.Load(newUrlAddress);
+                 int value = 0;
                  try
                  {
                      foreach (HtmlNode link in dataInner.DocumentNode.SelectNodes("//div[@id='categoriesGrid']//a"))
                      {
-                        gettingAllInfo(link.GetAttributeValue("href", string.Empty));
-                     }
+                        while(value != 2)
+                        {
+                            value = gettingAllInfo(link.GetAttributeValue("href", string.Empty));
+                            pageNumber = 0;
+                        }
+                    }
                  }
                  catch (Exception response_exception)
                  {
-                     gettingAllInfo(newUrlAddress);
+                     value = gettingAllInfo(newUrlAddress);
+                     if(value == 2)
+                     {
+                        pageNumber = 0;
+                     }
                  }
                  return 0;
             }
