@@ -25,6 +25,8 @@ namespace CrawlerPiguLt
             HtmlWeb hw = new HtmlWeb();
             HtmlDocument info = hw.Load(newUrlAddress);
 
+            // duomenys saugomi nelabai gerai, nes visas is eiles eina, o ne lygiagrečiai. listus reikitu pakeisti i objektu lista arba kelis mapus.
+
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
             {
                 priceList.Add(information_about_product.InnerText.Trim());
@@ -38,7 +40,7 @@ namespace CrawlerPiguLt
                 discountList.Add(information_about_product.InnerText.Trim());
             }
         }
-
+        // kai einama per puslapiu url prisideda ?page=3
         public void writingToExcel()
         {
             Console.WriteLine("EXCEL");
