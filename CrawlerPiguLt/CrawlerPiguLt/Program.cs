@@ -64,14 +64,10 @@ namespace CrawlerPiguLt
 
                 for(int i = 2; i < titleList.Count; i++)
                 {
-                    oSheet.Cells[i, 1] = priceList[i];
-                    oSheet.Cells[i, 2] = titleList[i];
-                    oSheet.Cells[i, 3] = discountList[i];
+                    oSheet.Cells[i, 1] = priceList[i - 2];
+                    oSheet.Cells[i, 2] = titleList[i - 2];
+                    oSheet.Cells[i, 3] = discountList[i - 2];
                 }
-
-                //AutoFit columns A:D.
-                oRng = oSheet.get_Range("A1", "D1");
-                oRng.EntireColumn.AutoFit();
 
                 oXL.Visible = false;
                 oXL.UserControl = false;
@@ -81,7 +77,6 @@ namespace CrawlerPiguLt
 
                 oWB.Close();
                 oXL.Quit();
-                System.Environment.Exit(1);
             }
             catch(Exception ex)
             {
@@ -89,30 +84,9 @@ namespace CrawlerPiguLt
             }
         }
 
-
-
-
         public int crawling(String kategorija, String newUrlAddress)
         {
-            WebClient client = new WebClient();
-
             NameValueCollection myNameValueCollection = new NameValueCollection();
-
-            String[] valueArray = null;
-
-            myNameValueCollection.Add("Host", "pigu.lt");
-            myNameValueCollection.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
-            myNameValueCollection.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            myNameValueCollection.Add("Accept-Language", "en-GB,en;q=0.5");
-
-            foreach (String key in myNameValueCollection.Keys)
-            {
-                valueArray = myNameValueCollection.GetValues(key);
-                foreach (String value in valueArray)
-                {
-                    client.Headers.Set(key, value);
-                }
-            }
 
             try
             {
@@ -161,10 +135,14 @@ namespace CrawlerPiguLt
                     var valueArray = piguLtUrls.GetValues(key);
                     foreach (String value in valueArray)
                     {
-                        methodRecursion = crawlerObject.crawling(key, value);
+                        if (key.Equals("Žaislai vaikams"))
+                        {
+                            methodRecursion = crawlerObject.crawling(key, value);
+                        }
                     }
                 }
             }
+            Console.WriteLine("Writing to excel");
             crawlerObject.writingToExcel();
             Console.WriteLine("END");
         }
