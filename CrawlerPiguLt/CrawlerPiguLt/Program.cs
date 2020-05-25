@@ -1,67 +1,97 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Office.Interop.Excel;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
-
 
 namespace CrawlerPiguLt
 {
     public class Program
     {
+        public int index = 0;
         public int triesToConnect = 0;
         public NameValueCollection piguLtUrls = new NameValueCollection();
 
+        public List<string> priceList = new List<string>();
+        public List<string> titleList = new List<string>();
+        public List<string> discountList = new List<string>();
+        public List<string> linkList = new List<string>(); // dar nenaudojamas bus
+
         public void gettingAllInfo(String newUrlAddress)
         {
+            index = index + 1;
+            Console.WriteLine(index);
             HtmlWeb hw = new HtmlWeb();
             HtmlDocument info = hw.Load(newUrlAddress);
-            String[] titleArray = new string[500];
-            String[] priceArray = new string[500];
-            String[] discountArray = new string[500];
-            for (int k = 0; k < titleArray.Length; k++)
-            {
-                titleArray[k] = "";
-                priceArray[k] = "";
-                discountArray[k] = "";
-            }
-            int a = 0, b = 0, c = 0;
 
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
             {
-             //   Console.WriteLine(information_about_product.InnerText.Trim());
-                priceArray[b] = information_about_product.InnerText.Trim();
-                b = b + 1;
+                priceList.Add(information_about_product.InnerText.Trim());
             }
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
             {
-                // Console.WriteLine(information_about_product.InnerText.Trim());
-                titleArray[a] = information_about_product.InnerText.Trim();
-                a = a + 1;
+                titleList.Add(information_about_product.InnerText.Trim());
             }
             foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//span[@class='discount']"))
             {
-                //Console.WriteLine(information_about_product.InnerText.Trim());
-                discountArray[c] = information_about_product.InnerText.Trim();
-                c = c + 1;
+                discountList.Add(information_about_product.InnerText.Trim());
             }
+        }
 
-            for(int j = 0; j < titleArray.Length; j++)
+        public void writingToExcel()
+        {
+            Console.WriteLine("EXCEL");
+            Microsoft.Office.Interop.Excel.Application oXL;
+            Microsoft.Office.Interop.Excel._Workbook oWB;
+            Microsoft.Office.Interop.Excel._Worksheet oSheet;
+            Microsoft.Office.Interop.Excel.Range oRng;
+            object misvalue = System.Reflection.Missing.Value;
+            try
             {
-                if(titleArray[j].Equals("") || priceArray.Equals(""))
-                {
+                //Start Excel and get Application object.
+                oXL = new Microsoft.Office.Interop.Excel.Application();
+                oXL.Visible = true;
 
-                }
-                else
+                //Get a new workbook.
+                oWB = (Microsoft.Office.Interop.Excel._Workbook)(oXL.Workbooks.Add(""));
+                oSheet = (Microsoft.Office.Interop.Excel._Worksheet)oWB.ActiveSheet;
+
+                //Add table headers going cell by cell.
+                oSheet.Cells[1, 1] = "Price";
+                oSheet.Cells[1, 2] = "Title";
+                oSheet.Cells[1, 3] = "Discount";
+
+                for(int i = 2; i < titleList.Count; i++)
                 {
-                    Console.WriteLine(" KAINA: " + priceArray[j] + " TITLE: " + titleArray[j] + " DISCOUNT: " + discountArray[j]);
+                    oSheet.Cells[i, 1] = priceList[i];
+                    oSheet.Cells[i, 2] = titleList[i];
+                    oSheet.Cells[i, 3] = discountList[i];
                 }
+
+                //AutoFit columns A:D.
+                oRng = oSheet.get_Range("A1", "D1");
+                oRng.EntireColumn.AutoFit();
+
+                oXL.Visible = false;
+                oXL.UserControl = false;
+                oWB.SaveAs("C:\\Users\\mariu\\Documents\\GitHub\\PiguLt\\Data.xls", Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing, // sutvarkyti saugojimo l.
+                    false, false, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange,
+                    Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+
+                oWB.Close();
+                oXL.Quit();
+                System.Environment.Exit(1);
+            }
+            catch(Exception ex)
+            {
+
             }
         }
 
 
 
-    
+
         public int crawling(String kategorija, String newUrlAddress)
         {
             WebClient client = new WebClient();
@@ -86,7 +116,6 @@ namespace CrawlerPiguLt
 
             try
             {
-                 Console.WriteLine("\nKategorija " + kategorija + "\n");
                  HtmlWeb hw = new HtmlWeb();
                  HtmlDocument dataInner = hw.Load(newUrlAddress);
                  try
@@ -98,7 +127,6 @@ namespace CrawlerPiguLt
                  }
                  catch (Exception response_exception)
                  {
-                     Console.WriteLine("Prekes sarase");
                      gettingAllInfo(newUrlAddress);
                  }
                  return 0;
@@ -137,7 +165,7 @@ namespace CrawlerPiguLt
                     }
                 }
             }
-
+            crawlerObject.writingToExcel();
             Console.WriteLine("END");
         }
     }
