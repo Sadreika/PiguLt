@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Data;
 
 namespace CrawlerPiguLt
 {
@@ -9,29 +10,54 @@ namespace CrawlerPiguLt
     {
         public void savingToDataBase(List<link> linkList)
         {
-            string connectionString = "";
             try
             {
+                cleaningDataBase();
                 SqlConnection con = new SqlConnection();
-                con.ConnectionString = @"(LocalDB)\MSSQLLocalDB; AttachDbFilename = C:\Users\mariu\Documents\GitHub\PiguLt\CrawlerPiguLt\CrawlerPiguLt\AllData.mdf; Integrated Security = True";
+                con.ConnectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=Items;Integrated Security=True";
                 con.Open();
-                Console.WriteLine("PAEJO");
+                
+
+                string price = "";
+                string title = "";
+                string discount = "";
+
+                for (int j = 0; j < linkList.Count; j++)
+                {
+                    for (int i = 0; i < linkList[j].discountList.Count; i++)
+                    {
+                        System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+                        cmd.CommandType = System.Data.CommandType.Text;
+                        cmd.Connection = con;
+                        price = linkList[j].priceList[i];
+                        title = linkList[j].titleList[i];
+                        discount = linkList[j].discountList[i];
+                        cmd.Parameters.AddWithValue("@Price", price);
+                        cmd.Parameters.AddWithValue("@Title", title);
+                        cmd.Parameters.AddWithValue("@Discount", discount);
+                        cmd.CommandText = "INSERT [Items].[dbo].[AllData] (Price, Name, Discount) VALUES (@Price, @Title, @Discount)";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
                 con.Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("nepaejo");
+                Console.WriteLine("Error with database");
             }
-         /*   for (int j = 0; j < linkList.Count; j++)
-            {
-                for (int i = 0; i < linkList[j].priceList.Count; i++)
-                {
-                  //  oSheet.Cells[i + 2 + fromWhereToStart, 1] = linkList[j].priceList[i];
-                  //  oSheet.Cells[i + 2 + fromWhereToStart, 2] = linkList[j].titleList[i];
-                  //  oSheet.Cells[i + 2 + fromWhereToStart, 3] = linkList[j].discountList[i];
-                  //  fromWhereToStart = i;
-                }
-            } */
+        }
+
+        public void cleaningDataBase()
+        {
+            SqlConnection con = new SqlConnection();
+            con.ConnectionString = @"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=Items;Integrated Security=True";
+            con.Open();
+            System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+            cmd.CommandType = System.Data.CommandType.Text;
+            cmd.Connection = con;
+            cmd.CommandText = "DELETE FROM [Items].[dbo].[AllData]";
+            cmd.ExecuteNonQuery();
+            con.Close();
         }
     }
 }
