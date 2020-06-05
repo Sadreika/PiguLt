@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CrawlerPiguLt
 {
-    public class link
+    public class link : codeExeptions
     {
         public List<string> priceList = new List<string>();
         public List<string> titleList = new List<string>();
@@ -49,7 +49,16 @@ namespace CrawlerPiguLt
                     }
                 }
                 pageNumber = pageNumber + 1;
-                crawlingProcess(creatingNewUrl(newUrlAddress));
+
+                if(checkingForLinkExeption(newUrlAddress).Equals(""))
+                {
+                    crawlingProcess(creatingNewUrl(newUrlAddress));
+                }
+                else
+                {
+                    settingOriginalLink(checkingForLinkExeption(newUrlAddress));
+                    crawlingProcess(creatingNewUrlWithOutPage(newUrlAddress));
+                }
             }
            
             catch (Exception ex)
@@ -61,6 +70,12 @@ namespace CrawlerPiguLt
         public string creatingNewUrl(string url)
         {
             string nextUrl = originalLink + "?page=" + pageNumber;
+            return nextUrl;
+        }
+
+        public string creatingNewUrlWithOutPage(string url)
+        {
+            string nextUrl = originalLink + pageNumber;
             return nextUrl;
         }
     }

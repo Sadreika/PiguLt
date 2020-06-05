@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="codeExeptions.cs" />
     <Compile Include="excel.cs" />
     <Compile Include="Infomation_about_link.cs" />
     <Compile Include="link.cs" />

@@ -28,13 +28,12 @@ namespace CrawlerPiguLt
                 var valueArray = piguLtUrls.GetValues(key);
                 foreach (String value in valueArray)
                 {
-                    if (key.Equals("Tvoros")) // reikes padaryti, kad visiems
+                    if (key.Equals("Batutai")) // reikes padaryti, kad visiems
                     { 
                         linkObject.crawling(value);
                     }
                 }
             }
-
         }
     }
 }
