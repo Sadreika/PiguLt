@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration;
 
 namespace CrawlerPiguLt
 {
@@ -12,7 +9,20 @@ namespace CrawlerPiguLt
     {
         public void savingToDataBase(List<link> linkList)
         {
-            for (int j = 0; j < linkList.Count; j++)
+            string connectionString = "";
+            try
+            {
+                SqlConnection con = new SqlConnection();
+                con.ConnectionString = @"(LocalDB)\MSSQLLocalDB; AttachDbFilename = C:\Users\mariu\Documents\GitHub\PiguLt\CrawlerPiguLt\CrawlerPiguLt\AllData.mdf; Integrated Security = True";
+                con.Open();
+                Console.WriteLine("PAEJO");
+                con.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("nepaejo");
+            }
+         /*   for (int j = 0; j < linkList.Count; j++)
             {
                 for (int i = 0; i < linkList[j].priceList.Count; i++)
                 {
@@ -21,7 +31,7 @@ namespace CrawlerPiguLt
                   //  oSheet.Cells[i + 2 + fromWhereToStart, 3] = linkList[j].discountList[i];
                   //  fromWhereToStart = i;
                 }
-            }
+            } */
         }
     }
 }
