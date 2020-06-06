@@ -24,7 +24,7 @@ namespace CrawlerPiguLt
 
                 for (int j = 0; j < linkList.Count; j++)
                 {
-                    for (int i = 0; i < linkList[j].discountList.Count; i++)
+                    for (int i = 0; i < linkList[j].titleList.Count; i++)
                     {
                         System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
                         cmd.CommandType = System.Data.CommandType.Text;

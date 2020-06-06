@@ -13,7 +13,8 @@ namespace CrawlerPiguLt
         public List<string> titleList = new List<string>();
         public List<string> discountList = new List<string>();
         public string originalLink = "";
-        public int pageNumber = 0;
+        public int pageNumber = 1;
+        public bool isThisPageIsExespion = false;
 
         public void settingOriginalLink(string givenOriginalLink)
         {
@@ -22,42 +23,74 @@ namespace CrawlerPiguLt
 
         public void crawlingProcess(string newUrlAddress)
         {
-            Console.WriteLine(newUrlAddress);
+            Console.WriteLine("THIS IS URL " + newUrlAddress);
             try
             {
                 HtmlWeb hw = new HtmlWeb();
                 HtmlDocument info = hw.Load(newUrlAddress);
 
-                foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
-                {
-                    this.priceList.Add(information_about_product.InnerText.Trim());
-                }
                 foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//p[@class='product-name']"))
                 {
                     this.titleList.Add(information_about_product.InnerText.Trim());
                 }
-                foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-item__badges']"))
+                try
                 {
-                    var value = information_about_product.InnerHtml;
-                    if (value.Contains("discount") == true)
+                    foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-price']//span[@class='price notranslate']"))
                     {
-                        this.discountList.Add(information_about_product.InnerText.Trim().Replace("\n", "").Replace("\r", ""));
+                        this.priceList.Add(information_about_product.InnerText.Trim());
                     }
-                    else
-                    {
-                        this.discountList.Add("No discount");
-                    }
+                } catch (Exception ex)
+                {
+                    this.priceList.Add("No price");
                 }
+               
+                try
+                {
+                    foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//div[@class='product-item__badges']"))
+                    {
+                        var value = information_about_product.InnerHtml;
+                        if (value.Contains("discount") == true)
+                        {
+                            this.discountList.Add(information_about_product.InnerText.Trim().Replace("\n", "").Replace("\r", ""));
+                        }
+                        else
+                        {
+                            this.discountList.Add("No discount");
+                        }
+                    }
+                } catch (Exception ex)
+                {
+                    this.discountList.Add("No discount");
+                }
+                try
+                {
+                    foreach (HtmlNode information_about_product in info.DocumentNode.SelectNodes("//span[@class='label-soldout']"))
+                    {
+                        this.priceList.Add("Sold out");
+                    } 
+                } catch(Exception ex)
+                {
+                    
+                }
+     
                 pageNumber = pageNumber + 1;
 
-                if(checkingForLinkExeption(newUrlAddress).Equals(""))
+                if(isThisPageIsExespion.Equals(true))
                 {
-                    crawlingProcess(creatingNewUrl(newUrlAddress));
+                    crawlingProcess(creatingNewUrlWithOutPage(newUrlAddress));
                 }
                 else
                 {
-                    settingOriginalLink(checkingForLinkExeption(newUrlAddress));
-                    crawlingProcess(creatingNewUrlWithOutPage(newUrlAddress));
+                    if (checkingForLinkExeption(newUrlAddress).Equals(""))
+                    {
+                        crawlingProcess(creatingNewUrl(newUrlAddress));
+                    }
+                    else
+                    {
+                        isThisPageIsExespion = true;
+                        settingOriginalLink(checkingForLinkExeption(newUrlAddress));
+                        crawlingProcess(creatingNewUrlWithOutPage(newUrlAddress));
+                    }
                 }
             }
            
@@ -65,6 +98,7 @@ namespace CrawlerPiguLt
             {
                 Console.WriteLine("FINAL PAGE");
             }
+            isThisPageIsExespion = false;
         }
 
         public string creatingNewUrl(string url)
