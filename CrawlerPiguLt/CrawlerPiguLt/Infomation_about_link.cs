@@ -41,10 +41,29 @@ namespace CrawlerPiguLt
                 link linkObject = new link();
                 linkObject.settingOriginalLink(linksNeedToVisit[i]);
                 linkObject.crawlingProcess(linksNeedToVisit[i]);
+                fixingLinks(linkObject);
                 linkList.Add(linkObject);
             }
             excel creatingExcel = new excel();
             creatingExcel.savingToDataBase(linkList);
+        }
+
+        public void fixingLinks(link linkObject)
+        {
+            if(linkObject.titleList.Count > linkObject.priceList.Count)
+            {
+                while(linkObject.titleList.Count > linkObject.priceList.Count)
+                {
+                    linkObject.priceList.Add("Null");
+                }
+            }
+            if (linkObject.titleList.Count > linkObject.discountList.Count)
+            {
+                while (linkObject.titleList.Count > linkObject.discountList.Count)
+                {
+                    linkObject.discountList.Add("Null");
+                }
+            }
         }
     }
 }
